@@ -1,0 +1,23 @@
+Architecture artwork sources — retrieved 8 October 2026
+
+AWS Architecture Icons (31 July 2026 package):
+https://aws.amazon.com/architecture/icons/
+https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip
+
+Docker official logo kit:
+https://www.docker.com/company/newsroom/media-resources/
+https://www.docker.com/static/Docker-Logos-1.zip
+
+Python official logo:
+https://www.python.org/community/logos/
+https://s3.dualstack.us-east-2.amazonaws.com/pythondotorg-assets/media/files/python-logo-only.svg
+The source lacks a viewBox; an equivalent viewport is supplied when embedding to preserve its complete geometry at smaller size. Artwork proportions and colors are preserved.
+
+FastAPI official project symbol:
+https://raw.githubusercontent.com/fastapi/fastapi/master/docs/en/docs/img/icon-white.svg
+
+Nginx official logo:
+https://nginx.org/img/nginx_logo.svg
+
+The icons identify technologies used by CampusPulse; trademarks remain with their owners.
+The exported SVG is self-contained and editable. The PNG is 3360 by 2280 pixels.

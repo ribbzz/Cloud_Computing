@@ -1,5 +1,11 @@
 # Architecture
 
+![CampusPulse deployed architecture with AWS and technology icons](images/CampusPulse-Architecture.png)
+
+Download the [vector PDF](images/CampusPulse-Architecture.pdf) or [editable SVG](images/CampusPulse-Architecture.svg). [Artwork sources](images/SOURCES.txt) identify the official AWS and technology assets. The diagram describes the deployment observed on October 8, 2026.
+
+## Text diagram
+
 ```mermaid
 flowchart TB
     Staff[Staff / admin browser] -->|HTTPS 443| Web
