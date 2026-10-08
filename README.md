@@ -47,7 +47,7 @@ Enter the device account password at the hidden prompt. The October 8 validation
 
 ## Scope and status
 
-This repository contains the working prototype source and updated reproduction instructions. The [architecture diagram](docs/ARCHITECTURE.md) is available as an image, vector PDF and editable SVG with official service/technology artwork. A report review draft with embedded evidence has been prepared privately; actual team contributions and presentation slides remain to be completed. Raw screenshots, email subscription links, private keys, passwords and AWS credentials are excluded from the public repository.
+This repository contains the working prototype source and updated reproduction instructions. The [architecture diagram](docs/ARCHITECTURE.md) is available as an image, vector PDF and editable SVG with official service/technology artwork. A report review draft with embedded evidence has been prepared privately; the presentation is also prepared privately as PowerPoint/PDF with speaker notes. Actual team contributions, speaker assignments and rehearsal remain to be completed. Raw screenshots, email subscription links, private keys, passwords and AWS credentials are excluded from the public repository.
 
 Provisioning scripts create billable resources and are intended for a fresh stack, not repeated execution against the existing demo. Account credits are not evidence that usage has no cost. The single EC2 host is not an automatically redundant deployment; a second subnet supports a future/manual recovery design.
 

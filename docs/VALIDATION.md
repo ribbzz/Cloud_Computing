@@ -39,4 +39,4 @@ The API/dashboard source was retained from the demonstrated prototype. Repositor
 
 ## Remaining academic deliverables
 
-A 25-page report review PDF with embedded evidence has been prepared privately, and the architecture PDF/image/SVG exports are in docs/images. The report still needs actual team contributions. Presentation slides and rehearsed fifteen-minute delivery remain outstanding. This repository is the source/deployment-guide deliverable, not proof of submission to the instructor.
+A 25-page report review PDF with embedded evidence has been prepared privately, and the architecture PDF/image/SVG exports are in docs/images. The report still needs actual team contributions. A 16-slide PowerPoint/PDF and speaker guide are prepared privately: twelve main slides timed to fifteen minutes plus four backup slides. Actual speaker assignments and rehearsal remain outstanding. This repository is the source/deployment-guide deliverable, not proof of submission to the instructor.
