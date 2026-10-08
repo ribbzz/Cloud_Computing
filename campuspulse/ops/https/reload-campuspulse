@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+/usr/bin/docker exec campuspulse-web nginx -t
+/usr/bin/docker exec campuspulse-web nginx -s reload

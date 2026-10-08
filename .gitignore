@@ -1,0 +1,21 @@
+# Runtime secrets and generated state
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+**/letsencrypt/
+**/deploy/state.env*
+**/logs/
+**/*.before-*
+**/docker-compose.override.yml
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+*.egg-info/
+# Evidence is curated separately; do not publish raw account/email screenshots.
+private-evidence/
+**/https-backup.*/

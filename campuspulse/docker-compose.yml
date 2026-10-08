@@ -1,0 +1,41 @@
+# CampusPulse 2026 - runs on the EC2 instance inside the public subnet.
+#
+#   web (nginx)  :80  <- the only port open to the internet
+#     |
+#     +-- /api/  -> api (FastAPI) :8000  on the private docker network only
+#                     |
+#                     +-- DynamoDB / SSM / CloudWatch via the instance role
+#
+services:
+  api:
+    build: ./app
+    container_name: campuspulse-api
+    restart: unless-stopped
+    environment:
+      AWS_REGION: ${AWS_REGION:-eu-west-3}
+      EVENTS_TABLE: ${EVENTS_TABLE:-campuspulse-events}
+      USERS_TABLE: ${USERS_TABLE:-campuspulse-users}
+      JWT_SECRET_PARAM: ${JWT_SECRET_PARAM:-/campuspulse/jwt-secret}
+      TOKEN_TTL_MINUTES: ${TOKEN_TTL_MINUTES:-60}
+    volumes:
+      # the CloudWatch agent on the host tails this file
+      - ./logs:/var/log/campuspulse
+    expose:
+      - "8000"          # visible to nginx only, never published to the host
+    networks: [campus]
+
+  web:
+    image: nginx:1.27-alpine
+    container_name: campuspulse-web
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      - "80:80"
+    volumes:
+      - ./dashboard/index.html:/usr/share/nginx/html/index.html:ro
+      - ./dashboard/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks: [campus]
+
+networks:
+  campus:
+    driver: bridge

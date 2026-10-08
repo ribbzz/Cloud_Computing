@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CampusPulse 2026 - NorthBridge University</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --line:#252c37; --ink:#e6edf3;
+    --muted:#8b949e; --accent:#3b82f6; --ok:#22c55e; --warn:#f59e0b; --crit:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:14px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{display:flex;align-items:center;gap:16px;padding:14px 22px;
+         border-bottom:1px solid var(--line);background:var(--panel)}
+  header h1{font-size:16px;margin:0;letter-spacing:.3px}
+  header .who{margin-left:auto;color:var(--muted);font-size:12px}
+  main{padding:22px;max-width:1200px;margin:0 auto}
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .card h2{margin:0 0 10px;font-size:12px;text-transform:uppercase;
+           letter-spacing:.08em;color:var(--muted);font-weight:600}
+  .big{font-size:30px;font-weight:600}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase}
+  .pill{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600}
+  .normal{background:#14351f;color:var(--ok)}
+  .warning{background:#3a2c0c;color:var(--warn)}
+  .critical{background:#3d1517;color:var(--crit)}
+  input,button{font:inherit;border-radius:7px;border:1px solid var(--line);
+               padding:9px 12px;background:#0d1117;color:var(--ink)}
+  button{background:var(--accent);border-color:var(--accent);color:#fff;
+         cursor:pointer;font-weight:600}
+  button.ghost{background:transparent;color:var(--muted);border-color:var(--line)}
+  #login{max-width:340px;margin:12vh auto}
+  #login .card{display:flex;flex-direction:column;gap:10px}
+  .err{color:var(--crit);font-size:12px;min-height:16px}
+  .scroll{overflow-x:auto}
+  .hint{color:var(--muted);font-size:12px;margin-top:6px}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="card">
+    <h2>CampusPulse 2026 - sign in</h2>
+    <input id="u" placeholder="username" autocomplete="username">
+    <input id="p" type="password" placeholder="password" autocomplete="current-password">
+    <button onclick="doLogin()">Sign in</button>
+    <div class="err" id="loginErr"></div>
+    <div class="hint">staff sees the dashboard, admin also sees alerts</div>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <h1>CampusPulse 2026 &middot; NorthBridge University</h1>
+    <span class="who" id="who"></span>
+    <button class="ghost" onclick="logout()">Sign out</button>
+  </header>
+  <main>
+    <div class="grid" id="tiles"></div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Operational alerts (admin only)</h2>
+      <div class="scroll"><table id="alerts">
+        <thead><tr><th>Time</th><th>Building</th><th>Room</th>
+                   <th>Type</th><th>Value</th><th>Severity</th></tr></thead>
+        <tbody></tbody></table></div>
+      <div class="hint" id="alertsHint"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Latest events</h2>
+      <div class="scroll"><table id="events">
+        <thead><tr><th>Time</th><th>Building</th><th>Room</th>
+                   <th>Type</th><th>Value</th><th>Severity</th></tr></thead>
+        <tbody></tbody></table></div>
+    </div>
+  </main>
+</div>
+
+<script>
+// The dashboard is served by nginx on the same origin as /api, so there is
+// no CORS to configure and the browser never talks to DynamoDB directly.
+const API = "/api";
+let token = sessionStorage.getItem("cp_token") || "";
+let role  = sessionStorage.getItem("cp_role")  || "";
+
+async function call(path){
+  const r = await fetch(API + path, {headers:{Authorization:"Bearer " + token}});
+  if(r.status === 401){ logout(); throw new Error("session expired"); }
+  if(r.status === 403){ return null; }          // role not allowed - expected
+  if(!r.ok) throw new Error(path + " -> " + r.status);
+  return r.json();
+}
+
+async function doLogin(){
+  const err = document.getElementById("loginErr");
+  err.textContent = "";
+  try{
+    const r = await fetch(API + "/login", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({username:u.value, password:p.value})
+    });
+    if(!r.ok){ err.textContent = "Invalid credentials"; return; }
+    const data = await r.json();
+    token = data.access_token; role = data.role;
+    sessionStorage.setItem("cp_token", token);
+    sessionStorage.setItem("cp_role", role);
+    show();
+  }catch(e){ err.textContent = "Cannot reach the API"; }
+}
+
+function logout(){
+  sessionStorage.clear(); token = ""; role = "";
+  document.getElementById("app").hidden = true;
+  document.getElementById("login").hidden = false;
+}
+
+function row(i){
+  return `<tr><td>${(i.timestamp||"").replace("T"," ").slice(0,19)}</td>
+    <td>${i.building||""}</td><td>${i.room||""}</td><td>${i.event_type||""}</td>
+    <td>${i.value||""} ${i.unit||""}</td>
+    <td><span class="pill ${i.severity}">${i.severity}</span></td></tr>`;
+}
+
+async function refresh(){
+  const s = await call("/stats");
+  const sev = s.severity_breakdown || {};
+  document.getElementById("tiles").innerHTML = `
+    <div class="card"><h2>Total events</h2><div class="big">${s.total_events}</div></div>
+    <div class="card"><h2>Critical</h2><div class="big" style="color:var(--crit)">${sev.critical||0}</div></div>
+    <div class="card"><h2>Warnings</h2><div class="big" style="color:var(--warn)">${sev.warning||0}</div></div>
+    <div class="card"><h2>Top energy building</h2><div class="big" style="font-size:20px">
+      ${(s.top_energy_consumers_kwh[0]||{}).building||"-"}</div>
+      <div class="hint">${(s.top_energy_consumers_kwh[0]||{}).kwh||0} kWh</div></div>
+    <div class="card"><h2>Busiest room</h2><div class="big" style="font-size:20px">
+      ${(s.busiest_rooms[0]||{}).room||"-"}</div>
+      <div class="hint">peak ${(s.busiest_rooms[0]||{}).peak_occupancy||0} people</div></div>`;
+
+  const ev = await call("/events?limit=25");
+  document.querySelector("#events tbody").innerHTML =
+    (ev.items||[]).map(row).join("") || "<tr><td colspan=6>no events yet</td></tr>";
+
+  const al = await call("/alerts?limit=25");
+  const body = document.querySelector("#alerts tbody");
+  if(al === null){
+    body.innerHTML = "";
+    document.getElementById("alertsHint").textContent =
+      "403 - your role (" + role + ") is not allowed to read /alerts. Sign in as admin.";
+  }else{
+    document.getElementById("alertsHint").textContent = "";
+    body.innerHTML = (al.items||[]).map(row).join("") ||
+      "<tr><td colspan=6>nothing abnormal right now</td></tr>";
+  }
+}
+
+function show(){
+  document.getElementById("login").hidden = true;
+  document.getElementById("app").hidden = false;
+  document.getElementById("who").textContent = "signed in as " + role;
+  refresh().catch(e => console.error(e));
+  clearInterval(window._t);
+  window._t = setInterval(() => refresh().catch(e => console.error(e)), 10000);
+}
+
+document.addEventListener("keydown", e => {
+  if(e.key === "Enter" && !document.getElementById("login").hidden) doLogin();
+});
+if(token) show();
+</script>
+</body>
+</html>
